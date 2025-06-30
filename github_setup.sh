@@ -1,18 +1,22 @@
 #!/bin/bash
-set -e
+set -euo pipefail
+IFS=$'\n\t'
 
-# GitHub CLI
-type -p curl >/dev/null || sudo apt install curl -y
+type -p curl >/dev/null || apt install curl -y
+
 curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
-    sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+    dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
 
-sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
 
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] \
-    https://cli.github.com/packages stable main" | \
-    sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+    https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list
 
-sudo apt update && sudo apt install -y gh
+apt update && apt install -y gh
 
-# Auth (interactive)
-gh auth login
+if [ -t 1 ]; then
+  echo "🔐 Launching GitHub login..."
+  gh auth login
+else
+  echo "⏭️ Skipping interactive gh auth (non-interactive shell)."
+fi
